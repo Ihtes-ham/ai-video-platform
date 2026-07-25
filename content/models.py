@@ -12,6 +12,7 @@ class Video(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     file = models.FileField(upload_to='videos/', storage=VideoStorage())
+    embedding = models.JSONField(blank=True, null=True)
     thumbnail = models.ImageField(upload_to='thumbnails/', blank=True, null=True)  # ye same rahega, images ke liye default storage theek hai
     uploader = models.ForeignKey(User, on_delete=models.CASCADE, related_name='videos')
     duration = models.PositiveIntegerField(help_text="Duration in seconds", blank=True, null=True)
