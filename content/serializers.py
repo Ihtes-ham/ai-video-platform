@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Video
+from .models import Video, WatchHistory
 from .embeddings import generate_embedding
 
 class VideoSerializer(serializers.ModelSerializer):
@@ -12,3 +12,11 @@ class VideoSerializer(serializers.ModelSerializer):
         text = f"{validated_data.get('title', '')} {validated_data.get('description', '')}"
         validated_data['embedding'] = generate_embedding(text)
         return super().create(validated_data)
+
+from .models import WatchHistory
+
+class WatchHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WatchHistory
+        fields = ['id', 'user', 'video', 'watched_at', 'watch_duration']
+        read_only_fields = ['user', 'watched_at']

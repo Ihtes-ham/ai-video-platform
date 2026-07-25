@@ -21,3 +21,12 @@ class Video(models.Model):
 
     def __str__(self):
         return self.title
+
+class WatchHistory(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='watch_history')
+    video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name='watch_history')
+    watched_at = models.DateTimeField(auto_now_add=True)
+    watch_duration = models.PositiveIntegerField(default=0, help_text="Seconds watched")
+
+    def __str__(self):
+        return f"{self.user.username} watched {self.video.title}"
