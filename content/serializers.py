@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Video, WatchHistory
+from .models import Video, WatchHistory,Comment, Like
 from .embeddings import generate_embedding
 from .tasks import generate_thumbnail
 from .moderation import check_content
@@ -29,3 +29,13 @@ class WatchHistorySerializer(serializers.ModelSerializer):
         model = WatchHistory
         fields = ['id', 'user', 'video', 'watched_at', 'watch_duration']
         read_only_fields = ['user', 'watched_at']
+
+from .models import Comment, Like
+
+class CommentSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'video', 'user', 'username', 'text', 'created_at']
+        read_only_fields = ['user', 'video', 'created_at']

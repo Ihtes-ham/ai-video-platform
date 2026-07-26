@@ -44,3 +44,27 @@ class WatchHistory(models.Model):
 
     def __str__(self):
         return f"{self.user.username} watched {self.video.title}"
+
+class Comment(models.Model):
+    video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    text = models.TextField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username}: {self.text[:30]}"
+
+
+class Like(models.Model):
+    video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name='likes')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('video', 'user')
+
+    def __str__(self):
+        return f"{self.user.username} likes {self.video.title}"

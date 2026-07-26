@@ -10,6 +10,10 @@ function VideoDetail() {
   const [video, setVideo] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const watchStart = useRef(Date.now());
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
+  const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -26,6 +30,8 @@ function VideoDetail() {
       .catch(() => {
         if (isMounted) setRecommendations([]);
       });
+
+    api.get(`videos/${id}/comments/`).then((res) => setComments(res.data));
 
     watchStart.current = Date.now();
 
@@ -78,6 +84,20 @@ function VideoDetail() {
     } catch (err) {
       alert('Failed to delete video.');
     }
+  };
+
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    const res = await api.post(`videos/${id}/comments/`, { text: newComment });
+    setComments([res.data, ...comments]);
+    setNewComment('');
+  };
+
+  const handleLike = async () => {
+    const res = await api.post(`videos/${id}/like/`);
+    setLiked(res.data.liked);
+    setLikesCount(res.data.likes_count);
   };
 
   if (!video) {
@@ -209,6 +229,38 @@ function VideoDetail() {
         >
           {video.description}
         </p>
+
+        <button
+          onClick={handleLike}
+          style={{
+            marginTop: 16, background: liked ? '#e50914' : 'transparent',
+            color: '#fff', border: '1px solid #e50914', borderRadius: 4,
+            padding: '8px 18px', cursor: 'pointer', fontSize: 14, fontWeight: 600,
+          }}
+        >
+          {liked ? '♥ Liked' : '♡ Like'} ({likesCount})
+        </button>
+
+        <div style={{ marginTop: 32 }}>
+          <h3 style={{ color: '#fff', marginBottom: 12 }}>Comments</h3>
+          <form onSubmit={handleCommentSubmit} style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+            <input
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Add a comment..."
+              style={{ flex: 1, padding: 10, background: '#333', border: 'none', borderRadius: 4, color: '#fff' }}
+            />
+            <button type="submit" style={{ padding: '10px 18px', background: '#e50914', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
+              Post
+            </button>
+          </form>
+          {comments.map((c) => (
+            <div key={c.id} style={{ marginBottom: 14, paddingBottom: 14, borderBottom: '1px solid #333' }}>
+              <strong style={{ color: '#fff', fontSize: 14 }}>{c.username}</strong>
+              <p style={{ color: '#ccc', fontSize: 14, margin: '4px 0 0' }}>{c.text}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       {recommendations.length > 0 && (

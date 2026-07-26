@@ -2,8 +2,8 @@ from django.shortcuts import render
 from rest_framework import viewsets, permissions
 from rest_framework.views import APIView
 
-from .models import Video, WatchHistory
-from .serializers import VideoSerializer, WatchHistorySerializer
+from .models import Video, WatchHistory, Comment, Like
+from .serializers import VideoSerializer, WatchHistorySerializer, CommentSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .embeddings import generate_embedding, cosine_similarity
@@ -85,6 +85,31 @@ class VideoViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(top_videos, many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['get', 'post'])
+    def comments(self, request, pk=None):
+        video = self.get_object()
+
+        if request.method == 'GET':
+            comments = video.comments.all()
+            serializer = CommentSerializer(comments, many=True)
+            return Response(serializer.data)
+
+        serializer = CommentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=request.user, video=video)
+        return Response(serializer.data, status=201)
+
+    @action(detail=True, methods=['post'])
+    def like(self, request, pk=None):
+        video = self.get_object()
+        like, created = Like.objects.get_or_create(video=video, user=request.user)
+
+        if not created:
+            like.delete()
+            return Response({"liked": False, "likes_count": video.likes.count()})
+
+        return Response({"liked": True, "likes_count": video.likes.count()})
 
 class AnalyticsSummaryView(APIView):
     permission_classes = [permissions.IsAuthenticated]
