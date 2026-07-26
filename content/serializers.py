@@ -5,9 +5,11 @@ from .tasks import generate_thumbnail
 
 
 class VideoSerializer(serializers.ModelSerializer):
+    hls_url = serializers.ReadOnlyField()
+
     class Meta:
         model = Video
-        fields = ['id', 'title', 'description', 'file', 'thumbnail', 'uploader', 'duration', 'status', 'embedding', 'created_at']
+        fields = ['id', 'title', 'description', 'file', 'hls_url', 'thumbnail', 'uploader', 'duration', 'status', 'embedding', 'created_at']
         read_only_fields = ['uploader', 'status', 'created_at', 'embedding']
 
     def create(self, validated_data):

@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from .storage import VideoStorage
 
+
 class Video(models.Model):
     STATUS_CHOICES = (
         ('processing', 'Processing'),
@@ -13,12 +14,19 @@ class Video(models.Model):
     description = models.TextField(blank=True)
     file = models.FileField(upload_to='videos/', storage=VideoStorage())
     embedding = models.JSONField(blank=True, null=True)
-    thumbnail = models.ImageField(upload_to='thumbnails/', blank=True, null=True)  # ye same rahega, images ke liye default storage theek hai
+    thumbnail = models.ImageField(upload_to='thumbnails/', blank=True, null=True)
     uploader = models.ForeignKey(User, on_delete=models.CASCADE, related_name='videos')
     duration = models.PositiveIntegerField(help_text="Duration in seconds", blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='processing')
     created_at = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def hls_url(self):
+        if self.file:
+            base_url = self.file.url
+            streaming_url = base_url.replace('/upload/', '/upload/sp_auto/')
+            return streaming_url + '.m3u8'
+        return None
     def __str__(self):
         return self.title
 
