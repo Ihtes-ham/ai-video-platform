@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api';
-import VideoPlayer from './VideoPlayer';
 import UploadForm from './UploadForm';
 
-function VideoList() {
+function Home() {
   const [videos, setVideos] = useState([]);
-  const [selectedVideo, setSelectedVideo] = useState(null);
   const [query, setQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
+  const navigate = useNavigate();
 
   const loadAllVideos = () => {
     api.get('videos/').then((res) => setVideos(res.data));
@@ -36,10 +36,7 @@ function VideoList() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#141414', padding: '24px 40px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
-        <h1 style={{ color: '#e50914', fontSize: 28, fontWeight: 700, margin: 0, letterSpacing: 0.5 }}>
-          StreamAI
-        </h1>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
         <button
           onClick={() => setShowUpload(true)}
           style={{
@@ -83,12 +80,38 @@ function VideoList() {
         )}
       </form>
 
+      {videos.length > 0 && !searching && (
+        <div
+          onClick={() => navigate(`/video/${videos[0].id}`)}
+          style={{
+            position: 'relative', height: 320, borderRadius: 8, overflow: 'hidden',
+            marginBottom: 32, cursor: 'pointer',
+            background: videos[0].thumbnail
+              ? `linear-gradient(to top, rgba(20,20,20,1) 0%, rgba(20,20,20,0.2) 60%, rgba(20,20,20,0) 100%), url(${videos[0].thumbnail})`
+              : 'linear-gradient(135deg, #2a2a2a, #1a1a1a)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        >
+          <div style={{ position: 'absolute', bottom: 30, left: 30, maxWidth: 500 }}>
+            <span style={{ color: '#e50914', fontSize: 13, fontWeight: 700, letterSpacing: 1 }}>
+              FEATURED
+            </span>
+            <h2 style={{ color: '#fff', fontSize: 32, margin: '8px 0', fontWeight: 700 }}>
+              {videos[0].title}
+            </h2>
+            <p style={{ color: '#ddd', fontSize: 15, lineHeight: 1.5 }}>
+              {videos[0].description}
+            </p>
+          </div>
+        </div>
+      )}
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 20 }}>
         {videos.map((video) => (
           <div
             key={video.id}
-            onClick={() => setSelectedVideo(video)}
-            className="video-card"
+            onClick={() => navigate(`/video/${video.id}`)}
             style={{
               background: '#1f1f1f', borderRadius: 6, overflow: 'hidden',
               cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease',
@@ -127,10 +150,6 @@ function VideoList() {
         <p style={{ color: '#999', marginTop: 20 }}>No results found.</p>
       )}
 
-      {selectedVideo && (
-        <VideoPlayer video={selectedVideo} onClose={() => setSelectedVideo(null)} />
-      )}
-
       {showUpload && (
         <UploadForm onUploadSuccess={handleUploadSuccess} onClose={() => setShowUpload(false)} />
       )}
@@ -138,4 +157,4 @@ function VideoList() {
   );
 }
 
-export default VideoList;
+export default Home;
