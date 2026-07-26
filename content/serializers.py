@@ -2,19 +2,23 @@ from rest_framework import serializers
 from .models import Video, WatchHistory
 from .embeddings import generate_embedding
 from .tasks import generate_thumbnail
-
+from .moderation import check_content
 
 class VideoSerializer(serializers.ModelSerializer):
     hls_url = serializers.ReadOnlyField()
 
     class Meta:
         model = Video
-        fields = ['id', 'title', 'description', 'file', 'hls_url', 'thumbnail', 'uploader', 'duration', 'status', 'embedding', 'created_at']
-        read_only_fields = ['uploader', 'status', 'created_at', 'embedding']
+        fields = ['id', 'title', 'description', 'file', 'hls_url', 'thumbnail', 'uploader', 'duration', 'status', 'moderation_status', 'embedding', 'created_at']
+        read_only_fields = ['uploader', 'status', 'moderation_status', 'created_at', 'embedding']
 
     def create(self, validated_data):
         text = f"{validated_data.get('title', '')} {validated_data.get('description', '')}"
         validated_data['embedding'] = generate_embedding(text)
+        validated_data['moderation_status'] = check_content(
+            validated_data.get('title', ''),
+            validated_data.get('description', '')
+        )
         video = super().create(validated_data)
         generate_thumbnail.delay(video.id)
         return video

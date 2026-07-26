@@ -9,7 +9,13 @@ class Video(models.Model):
         ('ready', 'Ready'),
         ('failed', 'Failed'),
     )
+    MODERATION_CHOICES = (
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('flagged', 'Flagged'),
+    )
 
+    moderation_status = models.CharField(max_length=20, choices=MODERATION_CHOICES, default='pending')
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     file = models.FileField(upload_to='videos/', storage=VideoStorage())

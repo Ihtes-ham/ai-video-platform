@@ -1,5 +1,9 @@
 from django.contrib import admin
-from .models import Video
+from .models import Video, WatchHistory
 
-# Register your models here.
-admin.site.register(Video)
+@admin.register(Video)
+class VideoAdmin(admin.ModelAdmin):
+    list_display = ['title', 'uploader', 'status', 'moderation_status', 'created_at']
+    list_filter = ['moderation_status', 'status']
+
+admin.site.register(WatchHistory)
