@@ -8,6 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from .embeddings import generate_embedding, cosine_similarity
 from.analytics import get_analytics_summary
+import numpy as np
 
 class VideoViewSet(viewsets.ModelViewSet):
     queryset = Video.objects.all()
@@ -52,6 +53,36 @@ class VideoViewSet(viewsets.ModelViewSet):
 
         results.sort(key=lambda x: x[1], reverse=True)
         top_videos = [v for v, score in results[:5]]
+        serializer = self.get_serializer(top_videos, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def for_you(self, request):
+        user_history = WatchHistory.objects.filter(user=request.user).select_related('video')
+
+        if not user_history.exists():
+            return Response({"message": "No watch history yet — watch some videos first"})
+
+        embeddings = [
+            wh.video.embedding for wh in user_history
+            if wh.video.embedding
+        ]
+
+        if not embeddings:
+            return Response({"message": "No embeddings available yet"})
+
+        avg_embedding = np.mean(embeddings, axis=0).tolist()
+
+        watched_ids = user_history.values_list('video_id', flat=True)
+
+        results = []
+        for video in Video.objects.exclude(id__in=watched_ids).exclude(embedding__isnull=True):
+            similarity = cosine_similarity(avg_embedding, video.embedding)
+            results.append((video, similarity))
+
+        results.sort(key=lambda x: x[1], reverse=True)
+        top_videos = [v for v, score in results[:10]]
+
         serializer = self.get_serializer(top_videos, many=True)
         return Response(serializer.data)
 
