@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import Video, WatchHistory
 from .embeddings import generate_embedding
+from .tasks import generate_thumbnail
+
 
 class VideoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,9 +13,10 @@ class VideoSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         text = f"{validated_data.get('title', '')} {validated_data.get('description', '')}"
         validated_data['embedding'] = generate_embedding(text)
-        return super().create(validated_data)
+        video = super().create(validated_data)
+        generate_thumbnail.delay(video.id)
+        return video
 
-from .models import WatchHistory
 
 class WatchHistorySerializer(serializers.ModelSerializer):
     class Meta:
