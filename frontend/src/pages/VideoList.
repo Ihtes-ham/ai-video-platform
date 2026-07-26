@@ -1,0 +1,43 @@
+import React, { useEffect, useState } from 'react';
+import api from '../api';
+import VideoPlayer from './VideoPlayer';
+
+function VideoList() {
+  const [videos, setVideos] = useState([]);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+
+  useEffect(() => {
+    api.get('videos/').then((res) => setVideos(res.data));
+  }, []);
+
+  return (
+    <div style={{ padding: 20 }}>
+      <h2>Videos</h2>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
+        {videos.map((video) => (
+          <div
+            key={video.id}
+            onClick={() => setSelectedVideo(video)}
+            style={{ border: '1px solid #ccc', borderRadius: 8, overflow: 'hidden', cursor: 'pointer' }}
+          >
+            {video.thumbnail ? (
+              <img src={video.thumbnail} alt={video.title} style={{ width: '100%', height: 140, objectFit: 'cover' }} />
+            ) : (
+              <div style={{ width: '100%', height: 140, background: '#eee' }} />
+            )}
+            <div style={{ padding: 10 }}>
+              <strong>{video.title}</strong>
+              <p style={{ fontSize: 13, color: '#666' }}>{video.description}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {selectedVideo && (
+        <VideoPlayer video={selectedVideo} onClose={() => setSelectedVideo(null)} />
+      )}
+    </div>
+  );
+}
+
+export default VideoList;
