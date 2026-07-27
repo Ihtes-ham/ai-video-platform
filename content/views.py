@@ -12,6 +12,12 @@ import numpy as np
 
 class VideoViewSet(viewsets.ModelViewSet):
     queryset = Video.objects.all()
+    def get_queryset(self):
+        queryset = Video.objects.all()
+        category = self.request.query_params.get('category')
+        if category:
+            queryset = queryset.filter(category=category)
+        return queryset
     serializer_class = VideoSerializer
     permission_classes = [permissions.IsAuthenticated]
 

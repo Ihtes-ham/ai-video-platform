@@ -3,7 +3,7 @@ from .models import Video, WatchHistory
 
 @admin.register(Video)
 class VideoAdmin(admin.ModelAdmin):
-    list_display = ['title', 'uploader', 'status', 'moderation_status', 'created_at']
-    list_filter = ['moderation_status', 'status']
+    list_display = ['title', 'category','uploader', 'status', 'moderation_status', 'created_at']
+    list_filter = ['category','moderation_status', 'status']
 
 admin.site.register(WatchHistory)

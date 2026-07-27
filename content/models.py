@@ -16,6 +16,16 @@ class Video(models.Model):
     )
 
     moderation_status = models.CharField(max_length=20, choices=MODERATION_CHOICES, default='pending')
+    CATEGORY_CHOICES = (
+        ('tech','TECH'),
+        ('travel','TRAVEL'),
+        ('sports','SPORTS'),
+        ('lifestyle','LIFESTYLE'),
+        ('education','EDUCATION'),
+        ('entertainment','ENTERTAINMENT'),
+        ('other','OTHER'),
+    )
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='other')
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     file = models.FileField(upload_to='videos/', storage=VideoStorage())

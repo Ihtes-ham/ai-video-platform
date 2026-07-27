@@ -8,11 +8,36 @@ function Home() {
   const [query, setQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
+  const [category, setCategory] = useState('');
+
   const navigate = useNavigate();
+
+  const categories = [
+    'tech',
+    'travel',
+    'sports',
+    'lifestyle',
+    'education',
+    'entertainment',
+    'other',
+  ];
 
   const loadAllVideos = () => {
     api.get('videos/').then((res) => setVideos(res.data));
     setSearching(false);
+    setCategory('');
+  };
+
+  const loadByCategory = (cat) => {
+    setCategory(cat);
+    setSearching(false);
+
+    if (!cat) {
+      loadAllVideos();
+      return;
+    }
+
+    api.get(`videos/?category=${cat}`).then((res) => setVideos(res.data));
   };
 
   useEffect(() => {
@@ -21,12 +46,18 @@ function Home() {
 
   const handleSearch = (e) => {
     e.preventDefault();
+
     if (!query.trim()) {
       loadAllVideos();
       return;
     }
+
+    setCategory('');
     setSearching(true);
-    api.get(`videos/search/?q=${encodeURIComponent(query)}`).then((res) => setVideos(res.data));
+
+    api
+      .get(`videos/search/?q=${encodeURIComponent(query)}`)
+      .then((res) => setVideos(res.data));
   };
 
   const handleUploadSuccess = () => {
@@ -35,44 +66,92 @@ function Home() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#141414', padding: '24px 40px' }}>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
+    <div
+      style={{
+        minHeight: '100vh',
+        background: '#141414',
+        padding: '24px 40px',
+      }}
+    >
+      {/* Upload Button */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          marginBottom: 20,
+        }}
+      >
         <button
           onClick={() => setShowUpload(true)}
           style={{
-            background: '#e50914', color: '#fff', border: 'none',
-            padding: '10px 20px', borderRadius: 4, fontWeight: 600,
-            cursor: 'pointer', fontSize: 14,
+            background: '#e50914',
+            color: '#fff',
+            border: 'none',
+            padding: '10px 20px',
+            borderRadius: 4,
+            fontWeight: 600,
+            cursor: 'pointer',
+            fontSize: 14,
           }}
         >
           + Upload
         </button>
       </div>
 
-      <form onSubmit={handleSearch} style={{ marginBottom: 32, display: 'flex', gap: 10 }}>
+      {/* Search */}
+      <form
+        onSubmit={handleSearch}
+        style={{
+          marginBottom: 24,
+          display: 'flex',
+          gap: 10,
+          flexWrap: 'wrap',
+        }}
+      >
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by meaning — try 'introduction' or 'vacation'..."
           style={{
-            padding: '10px 14px', width: 360, background: '#333',
-            border: '1px solid #555', borderRadius: 4, color: '#fff', fontSize: 14,
+            padding: '10px 14px',
+            width: 360,
+            background: '#333',
+            border: '1px solid #555',
+            borderRadius: 4,
+            color: '#fff',
+            fontSize: 14,
           }}
         />
-        <button type="submit" style={{
-          padding: '10px 20px', background: '#333', color: '#fff',
-          border: '1px solid #555', borderRadius: 4, cursor: 'pointer',
-        }}>
+
+        <button
+          type="submit"
+          style={{
+            padding: '10px 20px',
+            background: '#333',
+            color: '#fff',
+            border: '1px solid #555',
+            borderRadius: 4,
+            cursor: 'pointer',
+          }}
+        >
           Search
         </button>
+
         {searching && (
           <button
             type="button"
-            onClick={() => { setQuery(''); loadAllVideos(); }}
+            onClick={() => {
+              setQuery('');
+              loadAllVideos();
+            }}
             style={{
-              padding: '10px 20px', background: 'transparent', color: '#aaa',
-              border: '1px solid #555', borderRadius: 4, cursor: 'pointer',
+              padding: '10px 20px',
+              background: 'transparent',
+              color: '#aaa',
+              border: '1px solid #555',
+              borderRadius: 4,
+              cursor: 'pointer',
             }}
           >
             Clear
@@ -80,12 +159,63 @@ function Home() {
         )}
       </form>
 
+      {/* Category Filters */}
+      <div
+        style={{
+          display: 'flex',
+          gap: 10,
+          marginBottom: 24,
+          flexWrap: 'wrap',
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => loadByCategory('')}
+          style={{
+            padding: '6px 16px',
+            borderRadius: 20,
+            fontSize: 13,
+            cursor: 'pointer',
+            background: category === '' ? '#e50914' : 'transparent',
+            color: '#fff',
+            border: '1px solid #555',
+          }}
+        >
+          All
+        </button>
+
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            type="button"
+            onClick={() => loadByCategory(cat)}
+            style={{
+              padding: '6px 16px',
+              borderRadius: 20,
+              fontSize: 13,
+              cursor: 'pointer',
+              background: category === cat ? '#e50914' : 'transparent',
+              color: '#fff',
+              border: '1px solid #555',
+              textTransform: 'capitalize',
+            }}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Featured Banner */}
       {videos.length > 0 && !searching && (
         <div
           onClick={() => navigate(`/video/${videos[0].id}`)}
           style={{
-            position: 'relative', height: 320, borderRadius: 8, overflow: 'hidden',
-            marginBottom: 32, cursor: 'pointer',
+            position: 'relative',
+            height: 320,
+            borderRadius: 8,
+            overflow: 'hidden',
+            marginBottom: 32,
+            cursor: 'pointer',
             background: videos[0].thumbnail
               ? `linear-gradient(to top, rgba(20,20,20,1) 0%, rgba(20,20,20,0.2) 60%, rgba(20,20,20,0) 100%), url(${videos[0].thumbnail})`
               : 'linear-gradient(135deg, #2a2a2a, #1a1a1a)',
@@ -93,32 +223,72 @@ function Home() {
             backgroundPosition: 'center',
           }}
         >
-          <div style={{ position: 'absolute', bottom: 30, left: 30, maxWidth: 500 }}>
-            <span style={{ color: '#e50914', fontSize: 13, fontWeight: 700, letterSpacing: 1 }}>
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 30,
+              left: 30,
+              maxWidth: 500,
+            }}
+          >
+            <span
+              style={{
+                color: '#e50914',
+                fontSize: 13,
+                fontWeight: 700,
+                letterSpacing: 1,
+              }}
+            >
               FEATURED
             </span>
-            <h2 style={{ color: '#fff', fontSize: 32, margin: '8px 0', fontWeight: 700 }}>
+
+            <h2
+              style={{
+                color: '#fff',
+                fontSize: 32,
+                margin: '8px 0',
+                fontWeight: 700,
+              }}
+            >
               {videos[0].title}
             </h2>
-            <p style={{ color: '#ddd', fontSize: 15, lineHeight: 1.5 }}>
+
+            <p
+              style={{
+                color: '#ddd',
+                fontSize: 15,
+                lineHeight: 1.5,
+              }}
+            >
               {videos[0].description}
             </p>
           </div>
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 20 }}>
+      {/* Videos Grid */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))',
+          gap: 20,
+        }}
+      >
         {videos.map((video) => (
           <div
             key={video.id}
             onClick={() => navigate(`/video/${video.id}`)}
             style={{
-              background: '#1f1f1f', borderRadius: 6, overflow: 'hidden',
-              cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+              background: '#1f1f1f',
+              borderRadius: 6,
+              overflow: 'hidden',
+              cursor: 'pointer',
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'scale(1.03)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.6)';
+              e.currentTarget.style.boxShadow =
+                '0 8px 20px rgba(0,0,0,0.6)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'scale(1)';
@@ -126,19 +296,50 @@ function Home() {
             }}
           >
             {video.thumbnail ? (
-              <img src={video.thumbnail} alt={video.title} style={{ width: '100%', height: 140, objectFit: 'cover' }} />
+              <img
+                src={video.thumbnail}
+                alt={video.title}
+                style={{
+                  width: '100%',
+                  height: 140,
+                  objectFit: 'cover',
+                }}
+              />
             ) : (
-              <div style={{
-                width: '100%', height: 140, background: '#2a2a2a',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#555', fontSize: 13,
-              }}>
+              <div
+                style={{
+                  width: '100%',
+                  height: 140,
+                  background: '#2a2a2a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#555',
+                  fontSize: 13,
+                }}
+              >
                 No thumbnail
               </div>
             )}
+
             <div style={{ padding: 12 }}>
-              <strong style={{ fontSize: 15, color: '#fff' }}>{video.title}</strong>
-              <p style={{ fontSize: 13, color: '#999', margin: '6px 0 0', lineHeight: 1.4 }}>
+              <strong
+                style={{
+                  fontSize: 15,
+                  color: '#fff',
+                }}
+              >
+                {video.title}
+              </strong>
+
+              <p
+                style={{
+                  fontSize: 13,
+                  color: '#999',
+                  margin: '6px 0 0',
+                  lineHeight: 1.4,
+                }}
+              >
                 {video.description}
               </p>
             </div>
@@ -147,11 +348,21 @@ function Home() {
       </div>
 
       {videos.length === 0 && searching && (
-        <p style={{ color: '#999', marginTop: 20 }}>No results found.</p>
+        <p
+          style={{
+            color: '#999',
+            marginTop: 20,
+          }}
+        >
+          No results found.
+        </p>
       )}
 
       {showUpload && (
-        <UploadForm onUploadSuccess={handleUploadSuccess} onClose={() => setShowUpload(false)} />
+        <UploadForm
+          onUploadSuccess={handleUploadSuccess}
+          onClose={() => setShowUpload(false)}
+        />
       )}
     </div>
   );

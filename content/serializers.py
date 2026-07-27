@@ -9,7 +9,7 @@ class VideoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Video
-        fields = ['id', 'title', 'description', 'file', 'hls_url', 'thumbnail', 'uploader', 'duration', 'status', 'moderation_status', 'embedding', 'created_at']
+        fields = ['id', 'title', 'description', 'file', 'hls_url', 'thumbnail', 'uploader', 'duration', 'status','category', 'moderation_status', 'embedding', 'created_at']
         read_only_fields = ['uploader', 'status', 'moderation_status', 'created_at', 'embedding']
 
     def create(self, validated_data):
