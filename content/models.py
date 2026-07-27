@@ -78,3 +78,12 @@ class Like(models.Model):
 
     def __str__(self):
         return f"{self.user.username} likes {self.video.title}"
+
+class Playlist(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='playlists')
+    name = models.CharField(max_length=100)
+    videos = models.ManyToManyField(Video, related_name='playlists', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.user.username})"

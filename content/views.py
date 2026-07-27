@@ -2,8 +2,8 @@ from django.shortcuts import render
 from rest_framework import viewsets, permissions
 from rest_framework.views import APIView
 
-from .models import Video, WatchHistory, Comment, Like
-from .serializers import VideoSerializer, WatchHistorySerializer, CommentSerializer
+from .models import Video, WatchHistory, Comment, Like,Playlist
+from .serializers import VideoSerializer, WatchHistorySerializer, CommentSerializer,PlaylistSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .embeddings import generate_embedding, cosine_similarity
@@ -137,4 +137,28 @@ class AnalyticsSummaryView(APIView):
 
     def get(self, request):
         return Response(get_analytics_summary())
+
+class PlaylistViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = PlaylistSerializer
+
+    def get_queryset(self):
+        return Playlist.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    @action(detail=True, methods=['post'])
+    def add_video(self, request, pk=None):
+        playlist = self.get_object()
+        video_id = request.data.get('video_id')
+        playlist.videos.add(video_id)
+        return Response({"status": "video added"})
+
+    @action(detail=True, methods=['post'])
+    def remove_video(self, request, pk=None):
+        playlist = self.get_object()
+        video_id = request.data.get('video_id')
+        playlist.videos.remove(video_id)
+        return Response({"status": "video removed"})
 

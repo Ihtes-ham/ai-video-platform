@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Video, WatchHistory,Comment, Like
+from .models import Video, WatchHistory,Comment, Like,Playlist
 from .embeddings import generate_embedding
 from .tasks import generate_thumbnail
 from .moderation import check_content
@@ -39,3 +39,14 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ['id', 'video', 'user', 'username', 'text', 'created_at']
         read_only_fields = ['user', 'video', 'created_at']
+
+class PlaylistSerializer(serializers.ModelSerializer):
+    video_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Playlist
+        fields = ['id', 'name', 'videos', 'video_count', 'created_at']
+        read_only_fields = ['created_at']
+
+    def get_video_count(self, obj):
+        return obj.videos.count()

@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import VideoDetail from './pages/VideoDetail';
 import Profile from './pages/Profile';
 import Trending from './pages/Trending';
+import PlaylistDetail from './pages/PlaylistDetail';
 import Navbar from './components/Navbar';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
           <Route path="/video/:id" element={<VideoDetail />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/trending" element={<Trending />} />
+          <Route path="/playlist/:id" element={<PlaylistDetail />} />
         </Routes>
       </div>
     </BrowserRouter>
