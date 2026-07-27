@@ -10,9 +10,12 @@ from .embeddings import generate_embedding, cosine_similarity
 from.analytics import get_analytics_summary
 import numpy as np
 
+from .permissions import IsOwnerOrReadOnly
+
 from django.db.models import Count,Q
 from django.utils import timezone
 from datetime import timedelta
+
 class VideoViewSet(viewsets.ModelViewSet):
     queryset = Video.objects.all()
     def get_queryset(self):
@@ -22,7 +25,7 @@ class VideoViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(category=category)
         return queryset
     serializer_class = VideoSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated,  IsOwnerOrReadOnly]
 
     def perform_create(self, serializer):
         serializer.save(uploader=self.request.user)
