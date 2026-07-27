@@ -36,6 +36,19 @@ function Navbar() {
         >
           Home
         </span>
+
+        <span
+          onClick={() => navigate('/trending')}
+          style={{
+            color: location.pathname === '/trending' ? '#fff' : '#999',
+            cursor: 'pointer', fontSize: 14, fontWeight: 500,
+            borderBottom: location.pathname === '/trending' ? '2px solid #e50914' : 'none',
+            paddingBottom: 4,
+          }}
+        >
+          Trending
+        </span>
+
         <span
           onClick={() => navigate('/profile')}
           style={{
@@ -47,6 +60,7 @@ function Navbar() {
         >
           My Profile
         </span>
+
         <button
           onClick={handleLogout}
           style={{

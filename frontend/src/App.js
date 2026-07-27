@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Home from './pages/Home';
 import VideoDetail from './pages/VideoDetail';
 import Profile from './pages/Profile';
+import Trending from './pages/Trending';
 import Navbar from './components/Navbar';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/video/:id" element={<VideoDetail />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/trending" element={<Trending />} />
         </Routes>
       </div>
     </BrowserRouter>

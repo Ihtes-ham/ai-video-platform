@@ -10,6 +10,9 @@ from .embeddings import generate_embedding, cosine_similarity
 from.analytics import get_analytics_summary
 import numpy as np
 
+from django.db.models import Count,Q
+from django.utils import timezone
+from datetime import timedelta
 class VideoViewSet(viewsets.ModelViewSet):
     queryset = Video.objects.all()
     def get_queryset(self):
@@ -116,6 +119,18 @@ class VideoViewSet(viewsets.ModelViewSet):
             return Response({"liked": False, "likes_count": video.likes.count()})
 
         return Response({"liked": True, "likes_count": video.likes.count()})
+
+    @action(detail=False, methods=['get'])
+    def trending(self, request):
+        since = timezone.now() - timedelta(days=7)
+
+        videos = Video.objects.annotate(
+            recent_watch_count=Count('watch_history', filter=Q(watch_history__watched_at__gte=since), distinct=True),
+            recent_like_count=Count('likes', filter=Q(likes__created_at__gte=since), distinct=True),
+        ).order_by('-recent_watch_count', '-recent_like_count')[:10]
+
+        serializer = self.get_serializer(videos, many=True)
+        return Response(serializer.data)
 
 class AnalyticsSummaryView(APIView):
     permission_classes = [permissions.IsAuthenticated]
