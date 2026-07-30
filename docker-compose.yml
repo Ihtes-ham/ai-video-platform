@@ -1,0 +1,50 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+  redis:
+    image: redis:7
+    ports:
+      - "6380:6379"
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - db
+      - redis
+  celery:
+    build: .
+    command: celery -A core worker --loglevel=info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - db
+      - redis
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - web
+volumes:
+  postgres_data:

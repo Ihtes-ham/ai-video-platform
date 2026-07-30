@@ -24,8 +24,7 @@ SECRET_KEY = config(
 
 DEBUG = config("DEBUG", default=True, cast=bool)
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
 
 # --------------------------------------------------
 # Installed Apps
@@ -193,8 +192,9 @@ SIMPLE_JWT = {
 # --------------------------------------------------
 # Celery
 # --------------------------------------------------
-CELERY_BROKER_URL = "redis://localhost:6379/0"
-CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+REDIS_HOST = config("REDIS_HOST", default="localhost")
+CELERY_BROKER_URL = f"redis://{REDIS_HOST}:6379/0"
+CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:6379/0"
 
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
